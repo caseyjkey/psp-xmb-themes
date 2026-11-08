@@ -1,0 +1,3 @@
+[submodule "CXMB"]
+	path = CXMB
+	url = https://github.com/PSP-Archive/CXMB.git
