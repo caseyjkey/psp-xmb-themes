@@ -1,0 +1,6 @@
+# Sony firmware dumps are copyrighted and huge — never commit these.
+firmware/
+work/
+.venv/
+*.o
+*.dec
