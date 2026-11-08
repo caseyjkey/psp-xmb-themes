@@ -1,118 +1,119 @@
-# PSP XMB Themes
+# Xbox 360 Blades theme for PSP
 
-Workbench for converting and shipping PSP XMB (cross-media bar) themes for
-custom firmware, with CXMB as the theme engine.
+Bring the original 2005 Xbox 360 **vertical Blades dashboard** to the PSP XMB.
+This repository contains ready-to-install CTF builds for PSP firmware 6.60 and
+6.61, plus the tools and research used to port and validate the theme.
 
-Target hardware for the current work: **PSP-2000 (02g, 64 MB)**, official
-**6.61** firmware + CXMB, 64 GB FAT32 Memory Stick.
+> **Current milestone:** vertical blades work on real hardware. The 6.61 build
+> has been tested on a PSP-2000 Slim (02g). Some visual polish is still being
+> ported: menu icons and the Xbox-styled clock/battery treatment are not yet in
+> this milestone build.
 
-## Layout
+## Download
 
-| Path | What it is |
-|---|---|
-| `themes/` | Finished CTF themes, ready to drop in `ms0:/PSP/THEME/` |
-| `scripts/` | CTF and PRX tooling (Node + Python) |
-| `docs/` | Conversion findings, offsets, and the working notes for each build |
-| `CXMB/` | Upstream CXMB plugin source (for reference on CTF/diff semantics) |
-| `firmware/` | Extracted 6.60 / 6.61 firmware. **Git-ignored**: Sony-owned and large |
-| `work/` | Scratch builds and extracted CTF trees. **Git-ignored** |
+Use the build matching your PSP's **system software version**:
 
-## The CTF format, briefly
+| PSP firmware | File | Status |
+|---|---|---|
+| 6.61 | [`themes/Blade_661.ctf`](themes/Blade_661.ctf) | Tested on PSP-2000 Slim (02g), vertical blades working |
+| 6.60 | [`themes/Blade_660.ctf`](themes/Blade_660.ctf) | Original upstream build; retained for 6.60 users |
 
-A CXMB theme is a `.CTF`: a PTF blob (wallpaper + preview) followed by a table
-of resources, each either a raw file (RCO / BMP / PMF / PRX) or a **diff record
-list** for a PRX.
+Do not install the 6.60 build on 6.61 merely because the PSP model matches.
+The firmware number, not whether the PSP is a 1000/2000/3000/Go/Street, selects
+the CTF build.
 
-The magic at offset `0x10` must match the firmware, so `0xDEAD0660` for 6.60 and
-`0xDEAD0661` for 6.61. CXMB accepts a 6.60 magic on 6.61, but rewriting it is
-one byte plus a header re-sign and removes a whole class of doubt.
+## Requirements
 
-For the three PRX files CXMB patches (`paf.prx`, `common_gui.prx`,
-`vshmain.prx`), the resource holds a list of `(offset, size, bytes)` records
-instead of the module itself. Each record is written into the running module at
-`text_addr + offset`, so **offsets are runtime (text-relative)**, not file
-offsets:
+- A PSP running custom firmware that can load VSH plugins
+- **CXMB** enabled for the VSH/XMB
+- System software **6.60 or 6.61**
+- A Memory Stick or internal storage exposed as `ms0:`
 
-- `vshmain.prx` — text base `0xa0`
-- `paf.prx` — text base `0xc0`
+This is a **CTF**, not a normal PTF. It will not work without CXMB.
 
-## Key findings
+## Install
 
-### 6.60 and 6.61 are nearly identical where it matters
+1. Check **Settings → System Settings → System Information** and note whether
+   the PSP reports 6.60 or 6.61.
+2. Download the matching CTF from the table above.
+3. Connect the PSP by USB and copy the file to `ms0:/PSP/THEME/`.
+4. Confirm CXMB is enabled. A common plugin entry is:
+   `ms0:/seplugins/cxmb/cxmb.prx 1`
+5. On the PSP, open **Settings → Theme Settings → Theme**, select the Blade
+   theme, and apply it.
+6. Restart the VSH or reboot the PSP if CXMB does not reload automatically.
+7. For the animated background, choose
+   **Settings → Theme Settings → Background → Original**.
 
-`paf.prx` differs by exactly **1 byte** between 6.60 and 6.61; `vshmain.prx` by
-exactly **2 bytes**. A 6.60-era patch record therefore ports to 6.61 unless it
-lands on one of those three bytes.
+See [the full install and recovery guide](docs/INSTALL.md) if the theme does not
+appear, CXMB falls back to stock, or the PSP boots to a black screen.
 
-`scripts/validate-ctf-for-firmware.py` checks a CTF's records against a target
-firmware and reports any that land on a differing byte. It is the gate to run
-before shipping any converted theme.
+## Compatibility
 
-### The vertical blade layout lives in `vshmain.prx` and `paf.prx`, not in PAF alone
+- **Confirmed:** PSP-2000 Slim, motherboard generation 02g, firmware 6.61,
+  CXMB. Vertical blades render and the stock font avoids corrupt/foreign glyphs.
+- **Expected but not yet hardware-tested here:** other PSP models on matching
+  6.60/6.61 firmware with a compatible CXMB setup.
+- **ARK-4 note:** upstream reports that ARK-4 r163 or newer may briefly flash a
+  white screen after the gameboot while loading an ISO. This is an ARK/CXMB
+  behavior, not a permanent display fault.
+- **Not supported:** stock firmware without CXMB, or firmware versions other
+  than 6.60/6.61.
 
-PAF records hold icon position/spacing floats. The Xbox 360 "blade" geometry
-needs the `vshmain.prx` records too. PAF-only experiments cannot produce
-vertical blades — they only move icons around inside a horizontal row.
+Read the full [compatibility matrix](docs/COMPATIBILITY.md) before experimenting
+on an untested model or firmware.
 
-### The XMB Settings column order is a `vshmain.prx` table
+## Recovery
 
-Two **parallel arrays** in `vshmain.prx`:
+A bad CTF can hang the VSH at a black screen. It does not normally damage the
+PSP. Force the PSP off by holding the power switch for about 10 seconds, then
+use your custom firmware's recovery menu to disable CXMB and reboot. On many
+setups, hold **R** while powering on to enter recovery.
 
-- entry table at file offset `0x54BC0`, 16 bytes per row:
-  `category, subcategory, model rights, region rights`
-- icon table at file offset `0x55024`, 20 bytes per row:
-  `main icon ptr, focused icon ptr, model rights, region rights, shadow icon ptr`
+Never write this theme directly to `flash0:`. CXMB exists so the theme can be
+loaded from the Memory Stick and recovered safely.
 
-The Settings rows are the rows with category `0`. The arrays are parallel: the
-model/region fields of entry row *i* equal icon row *i*. **Swap both together**
-or labels and icons desynchronise.
+## What works today
 
-Stock order (subcategory index): `0` System Update, `1` USB Connection,
-`2` Video, `3` Photo, `4` System, `5` Theme, `6` Date/Time, `7` Power Save,
-`8` Bluetooth, `9` Display, `10` Sound, `11` Security, `12` RSS, `13` Network.
+- Vertical Xbox 360 blade geometry
+- Green Xbox-style background and animation
+- Xbox 360 coldboot/gameboot assets included by the upstream theme
+- Clean stock PSP font with no broken glyphs
+- Clock and battery remain readable at the top of the screen
 
-`scripts/build-settings-reorder.py` swaps rows 0 and 1 in both arrays and emits
-the 8 diff records that result.
+## Remaining work
 
-### `system_plugin_fg.rco` foreground is the hard part
+- Restore the Xbox-styled menu icons while keeping the vertical geometry
+- Port the clock/battery/top-bar styling onto a clean 6.61 RCO base
+- Test the final hybrid on additional PSP models and CFW families
 
-The old Xbox foreground RCOs are structurally different from clean 6.61
-(18,740 vs 34,336 bytes). Clock/date text edits in a rebuilt
-`system_plugin_fg0.rco` are safe and active. Battery plane edits are not:
-changing the image reference or using large scale values causes an immediate
-CXMB fallback to a stock XMB. Change the battery one attribute at a time from
-the clean 6.61 base, keeping the original `tex_battery` / `tex_battery_shadow`
-references.
+Progress and technical notes live in
+[`docs/ctf-conversion-findings.md`](docs/ctf-conversion-findings.md).
 
-## Failure modes
+## Verification
 
-- **CXMB falls back silently.** An unusable resource produces a stock XMB
-  (the wallpaper may survive). It does not crash. Treat "looks stock" as a
-  patch failure, not a theme bug.
-- **A bad PRX patch can hang VSH.** The PSP boots to a black screen. Recover
-  with: hold power up 10s to force off, hold **R** while powering on, disable
-  CXMB under Plugins in ARK Recovery, reboot.
-- **The PSP drops off USB after a VSH reset.** Re-enter USB mode before editing
-  `conf.txt` again.
+```text
+2f24cb6c6ce011c306e4345210709cc673c5521c4d4c42cba4d7afec06fe5bb5  Blade_660.ctf
+5fa3152128ed0d4f87ecacdb2bdccb958584adf1d88e452644216a217dc96a50  Blade_661.ctf
+```
 
-## Applying a theme
+Both files are 1,818,578 bytes. The 6.61 build is the validated conversion of
+the upstream 6.60 CTF; its CXMB magic is `0xDEAD0661`.
 
-1. Copy the CTF to `ms0:/PSP/THEME/<name>/`.
-2. `ms0:/seplugins/cxmb/conf.txt` — theme path on line 1, `ms0` on line 2.
-3. `ms0:/seplugins/vsh.txt` — `ms0:/seplugins/cxmb/cxmb.prx 1` on the **first**
-   line.
-4. On the PSP: **Select → Reset VSH**.
+## For developers
 
-## Scripts
+The repository also contains CTF extraction/rebuild scripts and notes about
+CXMB PRX diff records. Start with [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
+Sony firmware files are intentionally excluded from Git.
 
-| Script | Purpose |
-|---|---|
-| `ctf-inspect.py` | Dump a CTF's resource table and decode its diff records |
-| `ctf-inventory.mjs` | One-line summary of a CTF or a directory of them |
-| `ctf-diff-dump.mjs` | Print a CTF's PRX diff records |
-| `ctf-diff-subset.mjs` | Rebuild a CTF keeping only selected diff records |
-| `ctf-extract.mjs` / `ctf-keep.mjs` / `ctf-replace.mjs` | Extract, filter, and replace CTF resources |
-| `ctf-to-661.py` | Rewrite a CTF's magic to 6.61 and re-sign its header table |
-| `validate-ctf-for-firmware.py` | Check a CTF's patch records against a target firmware |
-| `build-settings-reorder.py` | Build the XMB Settings reorder CTF |
-| `paf-record-context.py` | Disassemble the code around a PAF patch record |
+## Credits and rights
+
+The theme is based on **Xbox Blade PSP Theme by TheDelm**:
+<https://thedelm.itch.io/xbox-blade-psp-theme>
+
+CXMB is maintained by the PSP homebrew community:
+<https://github.com/PSP-Archive/CXMB>
+
+Xbox and Xbox 360 are trademarks of Microsoft. This is an unofficial fan
+project and is not affiliated with or endorsed by Microsoft or Sony. See
+[`ATTRIBUTION.md`](ATTRIBUTION.md) for redistribution and licensing details.
