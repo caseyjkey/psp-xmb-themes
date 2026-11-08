@@ -78,13 +78,14 @@ loaded from the Memory Stick and recovered safely.
 - Vertical Xbox 360 blade geometry
 - Green Xbox-style background and animation
 - Xbox 360 coldboot/gameboot assets included by the upstream theme
-- Clean stock PSP font with no broken glyphs
+- Clean stock 6.61 PSP font with no broken glyphs (deliberately retained)
 - Clock and battery remain readable at the top of the screen
 
 ## Remaining work
 
 - Restore the Xbox-styled menu icons while keeping the vertical geometry
-- Port the clock/battery/top-bar styling onto a clean 6.61 RCO base
+- Port the clock/battery/top-bar styling onto the modern Blade RCO base
+- Only change the font if full 6.61 glyph coverage can be preserved
 - Test the final hybrid on additional PSP models and CFW families
 
 Progress and technical notes live in

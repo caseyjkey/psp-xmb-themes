@@ -441,3 +441,55 @@ Conclusion:
 - Clock/date text edits are confirmed active and safe in `system_plugin_fg0_probe`.
 - Battery edits must be tested one attribute at a time from the safe `system_plugin_fg0` base, starting with very small changes or visibility animation changes.
 - Avoid changing the battery image reference or applying large battery scale values.
+
+## 2026-11-08 vertical-Blade hybrid milestone
+
+Real-hardware testing of TheDelm's Blade theme confirmed that its 159
+`vshmain.prx` and 25 `paf.prx` records produce the correct vertical geometry on
+a 6.61 PSP-2000. The theme intentionally leaves most menu icon slots blank.
+
+RCO inspection explains the visual result:
+
+- Blade `topmenu_icon.rco` uses `AJ` through `AQ` for the tall vertical blade
+  artwork (`160x482` and `384x482` images).
+- Most later image slots are 256-byte empty GIM placeholders, which is why menu
+  labels render without icons.
+- The older 6.61 Xbox 363 `topmenu_icon.rco` has real icon payloads in 69 of
+  those matching slots, but its `AJ` through `AQ` images are horizontal
+  `512x32` bars.
+
+Replacing the entire icon RCO would therefore restore icons by destroying the
+vertical blades. The safe hybrid keeps Blade's RCO structure and `AJ`-`AQ`
+payloads, then replaces only matching empty slots with the 69 non-empty Xbox 363
+icons. The resulting RCO remains version `0x100` and the full CTF retains all
+184 geometry records.
+
+Staged, not yet hardware-tested:
+
+- `Blade_661_vertical_icons_probe.ctf`
+- SHA-256: `8142531abe35f0e9107f8417a2165d62def5a9340445d0fd75d8c668e3da0c83`
+
+The original 3.80-era P360 foreground also clarified the status UI. Its
+`tex_battery` is not a normal battery sprite: it is a four-frame `226x128`
+transparent full-screen overlay. The legacy object scales each frame by `2.125`
+to `480x272`, drawing the thin top rail and four-bar battery seen in the period
+reference image.
+
+A second probe rebuilds the modern Blade version-`0x100`
+`system_plugin_fg.rco`, imports that legacy battery/rail image under the same
+resource name, and applies the legacy plane geometry. It is intentionally kept
+separate because older foreground tests showed that large battery-plane changes
+can trigger CXMB fallback.
+
+Staged, not yet hardware-tested:
+
+- `Blade_661_reference_hybrid_probe.ctf`
+- SHA-256: `f8b6c2545c87b77ca84b0eaedb482299cc696900ea00a872e002c6c7232cff9d`
+
+The font is no longer treated as a simple missing asset. Keeping the stock 6.61
+font fixed the corrupt and foreign-looking glyphs seen with legacy PGFs. A
+styled replacement should not ship unless it can preserve the complete 6.61
+glyph coverage.
+
+The probe builds remain under ignored `work/` storage until hardware testing.
+Only a confirmed candidate should be promoted to `themes/` and a release.
