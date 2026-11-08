@@ -47,6 +47,16 @@ For the modules used by this theme, runtime offsets map to file offsets using:
 The firmware-dependent scripts require locally extracted Sony firmware files.
 Those files are intentionally excluded for copyright and size reasons.
 
+Run the CTF round-trip regression tests with:
+
+```sh
+node --test tests/ctf-tools.test.mjs
+```
+
+CTF PRX table entries store a **record count**, not a byte length. The rebuild
+tools therefore copy each resource through the next table offset. Never slice a
+`vshmain.prx` or `paf.prx` entry using its header `size` field as bytes.
+
 ## Current porting direction
 
 The Blade CTF supplies the correct `vshmain.prx` + `paf.prx` geometry but little

@@ -102,7 +102,7 @@ const rewritten = [];
 for (const entry of entries) {
   const data = entry.name.toLowerCase() === resourceName.toLowerCase()
     ? replacement
-    : Buffer.from(base.subarray(entry.start, entry.start + entry.size));
+    : Buffer.from(getEntryData(base, baseParsed, entry));
   rewritten.push({ name: entry.name, start: cursor, size: entry.size });
   chunks.push(data);
   cursor += data.length;

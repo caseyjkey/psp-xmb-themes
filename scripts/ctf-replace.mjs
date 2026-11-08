@@ -49,9 +49,17 @@ for (let i = 0; i < count; i += 1) {
   });
 }
 
+function getEntryData(entry) {
+  const nextStart = entries
+    .filter((item) => item.start > entry.start)
+    .map((item) => item.start)
+    .sort((a, b) => a - b)[0] ?? tableOffset;
+  return buffer.subarray(entry.start, nextStart);
+}
+
 for (const [name, localFile] of replacements.entries()) {
   if (!entries.some((entry) => entry.name.toLowerCase() === name)) {
-    entries.push({ name, start: 0, size: 0 });
+    entries.push({ name, start: 0, size: 0, added: true });
   }
   replacements.set(name, await readFile(localFile));
 }
@@ -61,8 +69,13 @@ let cursor = ptfSize;
 const rewritten = [];
 for (const entry of entries) {
   const replacement = replacements.get(entry.name.toLowerCase());
-  const data = replacement ?? buffer.subarray(entry.start, entry.start + entry.size);
-  rewritten.push({ name: entry.name, start: cursor, size: data.length });
+  const originalData = entry.added ? null : getEntryData(entry);
+  const data = replacement ?? originalData;
+  const isDiffResource = originalData && entry.size !== originalData.length;
+  if (replacement && isDiffResource) {
+    throw new Error(`Refusing to replace diff resource without a record count: ${entry.name}`);
+  }
+  rewritten.push({ name: entry.name, start: cursor, size: replacement ? data.length : entry.size });
   chunks.push(Buffer.from(data));
   cursor += data.length;
 }

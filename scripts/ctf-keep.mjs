@@ -43,6 +43,14 @@ for (let i = 0; i < count; i += 1) {
   });
 }
 
+function getEntryData(entry) {
+  const nextStart = entries
+    .filter((item) => item.start > entry.start)
+    .map((item) => item.start)
+    .sort((a, b) => a - b)[0] ?? tableOffset;
+  return buffer.subarray(entry.start, nextStart);
+}
+
 const kept = entries.filter((entry) => keep.has(entry.name.toLowerCase()));
 if (kept.length === 0) {
   throw new Error("No matching resources selected");
@@ -52,10 +60,10 @@ const chunks = [Buffer.from(buffer.subarray(0, ptfSize))];
 let cursor = ptfSize;
 const rewritten = [];
 for (const entry of kept) {
-  const data = buffer.subarray(entry.start, entry.start + entry.size);
+  const data = getEntryData(entry);
   rewritten.push({ name: entry.name, start: cursor, size: entry.size });
   chunks.push(Buffer.from(data));
-  cursor += entry.size;
+  cursor += data.length;
 }
 
 const headerTable = Buffer.concat(rewritten.map(writeHeader));

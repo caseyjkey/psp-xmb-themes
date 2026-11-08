@@ -15,8 +15,8 @@ Use the build matching your PSP's **system software version**:
 
 | PSP firmware | File | Status |
 |---|---|---|
-| 6.61 | [`themes/Blade_661.ctf`](themes/Blade_661.ctf) | Tested on PSP-2000 Slim (02g), vertical blades working |
-| 6.60 | [`themes/Blade_660.ctf`](themes/Blade_660.ctf) | Original upstream build; retained for 6.60 users |
+| 6.61 | [Download `Blade_661.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.1.0/Blade_661.ctf) | Tested on PSP-2000 Slim (02g), vertical blades working |
+| 6.60 | [Download `Blade_660.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.1.0/Blade_660.ctf) | Original upstream build; retained for 6.60 users |
 
 Do not install the 6.60 build on 6.61 merely because the PSP model matches.
 The firmware number, not whether the PSP is a 1000/2000/3000/Go/Street, selects

@@ -43,22 +43,38 @@ const manifest = {
   entries: [],
 };
 
+function getEntryData(entry, entries) {
+  const nextStart = entries
+    .filter((item) => item.start > entry.start)
+    .map((item) => item.start)
+    .sort((a, b) => a - b)[0] ?? tableOffset;
+  return buffer.subarray(entry.start, nextStart);
+}
+
+const entries = [];
 for (let i = 0; i < count; i += 1) {
   const offset = tableOffset + i * HEADER_SIZE;
-  const name = readCString(buffer, offset, 64);
-  const start = buffer.readUInt32LE(offset + 64);
-  const size = buffer.readUInt32LE(offset + 68);
+  entries.push({
+    name: readCString(buffer, offset, 64),
+    start: buffer.readUInt32LE(offset + 64),
+    size: buffer.readUInt32LE(offset + 68),
+  });
+}
+
+for (const entry of entries) {
+  const { name, start, size } = entry;
   const rel = name.replace(/^\/+/, "");
   const dest = path.join(outDir, rel);
+  const data = getEntryData(entry, entries);
 
-  if (start + size > tableOffset) {
+  if (start < ptfSize || start + data.length > tableOffset) {
     manifest.entries.push({ name, start, size, extracted: false, reason: "entry exceeds data area" });
     continue;
   }
 
   await mkdir(path.dirname(dest), { recursive: true });
-  await writeFile(dest, buffer.subarray(start, start + size));
-  manifest.entries.push({ name, start, size, extracted: true, path: rel });
+  await writeFile(dest, data);
+  manifest.entries.push({ name, start, size, dataSize: data.length, extracted: true, path: rel });
 }
 
 await writeFile(path.join(outDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
