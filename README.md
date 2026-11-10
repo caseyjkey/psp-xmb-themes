@@ -14,9 +14,9 @@ Use the build matching your PSP's **system software version**:
 
 | PSP firmware | File | What you get |
 |---|---|---|
-| 6.61 | [Download `Blade_661.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.1.0/Blade_661.ctf) | **Recommended.** Modern Blade theme by TheDelm, retargeted to 6.61. Vertical blades confirmed on hardware. |
-| 6.60 | [Download `Blade_660.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.1.0/Blade_660.ctf) | The same modern Blade theme, unmodified upstream build. |
-| 6.60 | [Download `xbox_360_660_classic.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.1.0/xbox_360_660_classic.ctf) | The classic 2008-era Xbox 360 dashboard theme: real blade artwork, icons for every category, and the Xbox-styled clock. Read [Legacy classic theme](#legacy-classic-theme) first. |
+| 6.61 | [Download `Blade_661.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.2.0/Blade_661.ctf) | **Recommended.** Modern Blade theme by TheDelm, retargeted to 6.61. Vertical blades confirmed on hardware. |
+| 6.60 | [Download `Blade_660.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.2.0/Blade_660.ctf) | The same modern Blade theme, unmodified upstream build. |
+| 6.60 | [Download `xbox_360_660_classic.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.2.0/xbox_360_660_classic.ctf) | The classic 2008-era Xbox 360 dashboard theme: real blade artwork, icons for every category, and the Xbox-styled clock. Read [Legacy classic theme](#legacy-classic-theme) first. |
 
 Do not install the 6.60 build on 6.61 merely because the PSP model matches.
 The firmware number, not whether the PSP is a 1000/2000/3000/Go/Street, selects
