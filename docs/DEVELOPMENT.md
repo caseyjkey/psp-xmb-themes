@@ -43,6 +43,7 @@ For the modules used by this theme, runtime offsets map to file offsets using:
 | `ctf-to-661.py` | Convert the CXMB firmware magic and header signature to 6.61 |
 | `validate-ctf-for-firmware.py` | Check records against clean 6.60/6.61 modules |
 | `build-settings-reorder.py` | Build the experimental Settings reorder patch |
+| `retarget-ctf-for-firmware.py` | Retarget a theme to another firmware version, drop or swap resources |
 
 The firmware-dependent scripts require locally extracted Sony firmware files.
 Those files are intentionally excluded for copyright and size reasons.
@@ -69,4 +70,36 @@ Clock text edits are known safe; battery image-reference swaps are not.
 
 See [`ctf-conversion-findings.md`](ctf-conversion-findings.md) for the full
 experiment log.
+
+## Retargeting a theme to another firmware
+
+`retarget-ctf-for-firmware.py` is the supported way to move a CTF between
+firmware versions. It rewrites the magic, re-signs the header table, and drops
+patch records that cannot apply to the target modules.
+
+```sh
+python3 scripts/retarget-ctf-for-firmware.py in.ctf out.ctf \
+    --target 6.61 \
+    --drop /font/LTN0.PGF \
+    --drop-negative-offsets \
+    --firmware-dir firmware
+```
+
+Options:
+
+- `--target 6.60|6.61` — destination firmware magic.
+- `--drop RESOURCE` — remove a resource entirely (repeatable).
+- `--replace RESOURCE=FILE` — swap in a rebuilt resource (repeatable).
+- `--drop-negative-offsets` — drop records whose offset resolves outside the
+  target module, such as the `0xffffff60` header record some legacy themes carry.
+- `--firmware-dir` — root of extracted firmware (`firmware/6.61/extracted/F0/...`),
+  used to validate each patch offset against the real module.
+
+The classic 2008 Xbox 360 dashboard theme needs exactly this treatment:
+
+- magic rewrite plus header re-sign,
+- `/font/LTN0.PGF` dropped, because old PGFs render corrupt and
+  foreign-language glyphs on 6.61,
+- optionally `/vsh/resource/system_plugin_fg.rco` dropped if the legacy
+  foreground misbehaves.
 

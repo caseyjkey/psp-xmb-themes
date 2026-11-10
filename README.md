@@ -5,22 +5,25 @@ This repository contains ready-to-install CTF builds for PSP firmware 6.60 and
 6.61, plus the tools and research used to port and validate the theme.
 
 > **Current milestone:** vertical blades work on real hardware. The 6.61 build
-> has been tested on a PSP-2000 Slim (02g). Some visual polish is still being
-> ported: menu icons and the Xbox-styled clock/battery treatment are not yet in
-> this milestone build.
+> has been tested on a PSP-2000 Slim (02g). A second, more complete classic
+> theme is now available and awaiting its hardware check.
 
 ## Download
 
 Use the build matching your PSP's **system software version**:
 
-| PSP firmware | File | Status |
+| PSP firmware | File | What you get |
 |---|---|---|
-| 6.61 | [Download `Blade_661.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.1.0/Blade_661.ctf) | Tested on PSP-2000 Slim (02g), vertical blades working |
-| 6.60 | [Download `Blade_660.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.1.0/Blade_660.ctf) | Original upstream build; retained for 6.60 users |
+| 6.61 | [Download `Blade_661.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.1.0/Blade_661.ctf) | **Recommended.** Modern Blade theme by TheDelm, retargeted to 6.61. Vertical blades confirmed on hardware. |
+| 6.60 | [Download `Blade_660.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.1.0/Blade_660.ctf) | The same modern Blade theme, unmodified upstream build. |
+| 6.60 | [Download `xbox_360_660_classic.ctf`](https://github.com/caseyjkey/psp-xmb-themes/releases/download/v0.1.0/xbox_360_660_classic.ctf) | The classic 2008-era Xbox 360 dashboard theme: real blade artwork, icons for every category, and the Xbox-styled clock. Read [Legacy classic theme](#legacy-classic-theme) first. |
 
 Do not install the 6.60 build on 6.61 merely because the PSP model matches.
 The firmware number, not whether the PSP is a 1000/2000/3000/Go/Street, selects
 the CTF build.
+
+**Pick one theme.** Applying the classic theme over the Blade theme replaces your
+XMB entirely, including the boot screen and sound.
 
 ## Requirements
 
@@ -39,8 +42,8 @@ This is a **CTF**, not a normal PTF. It will not work without CXMB.
 3. Connect the PSP by USB and copy the file to `ms0:/PSP/THEME/`.
 4. Confirm CXMB is enabled. A common plugin entry is:
    `ms0:/seplugins/cxmb/cxmb.prx 1`
-5. On the PSP, open **Settings → Theme Settings → Theme**, select the Blade
-   theme, and apply it.
+5. On the PSP, open **Settings → Theme Settings → Theme**, select the theme,
+   and apply it.
 6. Restart the VSH or reboot the PSP if CXMB does not reload automatically.
 7. For the animated background, choose
    **Settings → Theme Settings → Background → Original**.
@@ -75,16 +78,53 @@ loaded from the Memory Stick and recovered safely.
 
 ## What works today
 
-- Vertical Xbox 360 blade geometry
+On `Blade_661.ctf`:
+
+- Vertical Xbox 360 blade geometry, confirmed on hardware
 - Green Xbox-style background and animation
 - Xbox 360 coldboot/gameboot assets included by the upstream theme
 - Clean stock 6.61 PSP font with no broken glyphs (deliberately retained)
 - Clock and battery remain readable at the top of the screen
 
+On the classic theme:
+
+- The complete period look: blade artwork, category icons, and the styled
+  clock and battery rail, all from one consistent 2008-era theme
+
+## Legacy classic theme
+
+`xbox_360_660_classic.ctf` is the original Xbox 360 dashboard theme. It is the
+one with **everything**: real blade artwork, icons for every category, and the
+Xbox-styled clock and battery rail.
+
+It targets 6.60 and needs two things before it is safe on 6.61:
+
+1. Its magic must be rewritten to `0xDEAD0661` and the header table re-signed.
+2. Its legacy font (`/font/LTN0.PGF`) must be dropped, because old PGFs render
+   corrupt and foreign-language glyphs on 6.61.
+
+Both are done by the script in this repository:
+
+```sh
+python3 scripts/retarget-ctf-for-firmware.py \
+    xbox_360_660_classic.ctf xbox_360_661.ctf \
+    --target 6.61 --drop /font/LTN0.PGF --firmware-dir firmware
+```
+
+If the classic theme's foreground (`system_plugin_fg.rco`) misbehaves on your
+firmware, drop it too and the PSP will use its own:
+
+```sh
+python3 scripts/retarget-ctf-for-firmware.py in.ctf out.ctf --target 6.61 \
+    --drop /font/LTN0.PGF --drop /vsh/resource/system_plugin_fg.rco \
+    --firmware-dir firmware
+```
+
 ## Remaining work
 
-- Restore the Xbox-styled menu icons while keeping the vertical geometry
-- Port the clock/battery/top-bar styling onto the modern Blade RCO base
+- Confirm the classic theme's blade art, icons, and styled clock on hardware
+- Decide whether the classic theme supersedes the modern Blade theme
+- Port the Xbox-styled clock onto the modern Blade RCO base
 - Only change the font if full 6.61 glyph coverage can be preserved
 - Test the final hybrid on additional PSP models and CFW families
 
@@ -96,10 +136,11 @@ Progress and technical notes live in
 ```text
 2f24cb6c6ce011c306e4345210709cc673c5521c4d4c42cba4d7afec06fe5bb5  Blade_660.ctf
 5fa3152128ed0d4f87ecacdb2bdccb958584adf1d88e452644216a217dc96a50  Blade_661.ctf
+880031ed5b58d8d4d9e331314891d22e88ce6f5eb7c98c2f3be642319fb2b533  xbox_360_660_classic.ctf
 ```
 
-Both files are 1,818,578 bytes. The 6.61 build is the validated conversion of
-the upstream 6.60 CTF; its CXMB magic is `0xDEAD0661`.
+`Blade_660.ctf` and `Blade_661.ctf` are 1,818,578 bytes. The 6.61 build is the
+validated conversion of the upstream 6.60 CTF; its CXMB magic is `0xDEAD0661`.
 
 ## For developers
 
@@ -109,8 +150,11 @@ Sony firmware files are intentionally excluded from Git.
 
 ## Credits and rights
 
-The theme is based on **Xbox Blade PSP Theme by TheDelm**:
+The Blade theme is by **TheDelm**:
 <https://thedelm.itch.io/xbox-blade-psp-theme>
+
+The classic Xbox 360 dashboard theme was originally released for PSP 3.80 M33
+and is mirrored on psppunk: <https://www.pspunk.com/psp-cxmb/>
 
 CXMB is maintained by the PSP homebrew community:
 <https://github.com/PSP-Archive/CXMB>

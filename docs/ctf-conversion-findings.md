@@ -493,3 +493,53 @@ glyph coverage.
 
 The probe builds remain under ignored `work/` storage until hardware testing.
 Only a confirmed candidate should be promoted to `themes/` and a release.
+
+## 2026-11-10 the classic 2008 theme is a better base than the modern Blade theme
+
+On-device test of the icon-only hybrid (`Blade_661_vertical_icons_probe.ctf`)
+showed **no visible change**. The deployed file was verified byte-identical to
+the local build, so the theme was loading and the geometry was fine — the icon
+slot merge simply was not what draws menu icons.
+
+Dumping both `topmenu_icon.rco` files explained it:
+
+- Blade (`Blade_661.ctf`): `AJ`–`AQ` are the tall vertical blade artwork
+  (`160x482`, `384x482`), and every later slot is a 256-byte empty GIM
+  placeholder.
+- Classic (`xbox_360_660_classic.ctf` from psppunk): `AJ`–`AP` are real
+  artwork at 27–66 KB each, and it also ships `system_plugin_fg0.rco` with the
+  period-correct four-bar battery plus top rail.
+
+So the modern Blade theme is a **geometry** theme that borrowed the classic
+artwork, while the classic theme is a **complete** theme. The classic one also
+matches the reference screenshot in the original request far more closely.
+
+The classic theme needed three fixes for 6.61:
+
+1. Magic `0xDEAD0660` -> `0xDEAD0661` and a header table re-sign.
+2. `/font/LTN0.PGF` dropped, which also removes the corrupt/foreign glyphs.
+3. The `vshmain.prx` record at offset `0xffffff60` resolves outside the 6.61
+   module and was dropped.
+
+All three are implemented in `scripts/retarget-ctf-for-firmware.py`, which
+validates every patch offset against the real target module instead of relying
+on hand-maintained offset tables.
+
+Built and staged:
+
+- `x360_661_full.ctf` — classic theme, retargeted, font dropped, all other
+  resources kept including the legacy foreground.
+  SHA-256 `62f53085063e7efd7049cfcf45ab23dd1544fb2ea72fd9f833fa1b9acfa76831`
+- `x360_661_safe_noFG.ctf` — same, with the legacy foreground dropped too so the
+  PSP uses its own.
+  SHA-256 `4be81e4bc0fb58ab83675d67b305073e1138ce10b2e98312b63b0978db03cf2d`
+
+Both were copied to the Memory Stick next to the working Blade theme so the
+known-good build stays one folder away.
+
+### Deployment notes
+- Inline PowerShell over `ssh` mangles `$_` because the local shell expands it
+  first. Write the script to a file, `scp` it, and run it with
+  `-File 'C:\\Users\\Public\\<name>.ps1'`.
+- The PSP drops off USB after a VSH reset, so confirm the drive is mounted
+  before each deploy.
