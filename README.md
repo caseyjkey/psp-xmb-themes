@@ -51,6 +51,9 @@ This is a **CTF**, not a normal PTF. It will not work without CXMB.
 See [the full install and recovery guide](docs/INSTALL.md) if the theme does not
 appear, CXMB falls back to stock, or the PSP boots to a black screen.
 
+For a PSP that cannot reach a usable recovery menu, see the tested
+[PSP-1000 Baryon Sweeper and dedicated recovery-card guide](docs/BARYON-RECOVERY.md).
+
 ## Compatibility
 
 - **Confirmed:** PSP-2000 Slim, motherboard generation 02g, firmware 6.61,
